@@ -21,16 +21,16 @@ class CLIP(nn.Module):
         )
         self.device = device
 
-    def encode_image(self,image):
-        return self.vision_encoder(image)
+    def encode_image(self,pixel_values):
+        return self.vision_encoder(pixel_values)
 
-    def encode_text(self, text,attention_mask=None):
-        return self.text_encoder(text,attention_mask)
+    def encode_text(self, input_ids,attention_mask=None):
+        return self.text_encoder(input_ids,attention_mask)
 
-    def forward(self,image,text,attention_mask=None):
-        image_features = self.encode_image(image)
+    def forward(self,pixel_values,input_ids,attention_mask=None):
+        image_features = self.encode_image(pixel_values)
 
-        text_features = self.encode_text(text,attention_mask)
+        text_features = self.encode_text(input_ids,attention_mask)
 
         image_features = F.normalize(image_features,dim=-1)
         text_features = F.normalize(text_features, dim=-1)

@@ -46,11 +46,11 @@ def train():
         n_channels=3,
         n_heads=model_args.vision_num_heads,
         n_layers=model_args.vision_num_layers,
-        emb_dim=model_args.vision_hidden_dim,
+        emb_dim=model_args.embed_dim,
     )
 
     text_encoder = TextEncoder(
-        vocab_size=48048,
+        vocab_size=processor.tokenizer.vocab_size,  
         d_model=model_args.text_hidden_dim,
         max_seq_len=model_args.max_seq_len,
         n_layers=model_args.text_num_layers,
@@ -72,7 +72,7 @@ def train():
         learning_rate=training_args.learning_rate,
         weight_decay=training_args.weight_decay,
         num_train_epochs=training_args.num_train_epochs,
-        evaluation_strategy=training_args.evaluation_strategy,
+        eval_strategy=training_args.evaluation_strategy,
         save_strategy=training_args.save_strategy,
         logging_steps=training_args.logging_steps,
         fp16=training_args.fp16,
@@ -91,7 +91,7 @@ def train():
 
     clip_trainer.save_model(training_args.output_dir)
 
-    if training_args.training_captioning_model:
+    if training_args.train_captioning_model:
         logger.info("*** Starting Captioning Model Training ***")
 
         text_decoder = TextDecoder(

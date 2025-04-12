@@ -11,12 +11,13 @@ class CLIPTrainer(Trainer):
         model,
         inputs,
         return_outputs=False,
+        **kwargs
     ):
         images = inputs.get("pixel_values")
         captions = inputs.get("input_ids")
         attention_mask = inputs.get("attention_mask", None)
 
-        outputs = model(image=images, text=captions, attention_mask=attention_mask)
+        outputs = model(pixel_values=images, input_ids=captions, attention_mask=attention_mask)
 
         logits_per_image = outputs["logits_per_image"]
         logits_per_text = outputs["logits_per_text"]

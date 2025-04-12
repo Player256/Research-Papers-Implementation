@@ -8,7 +8,7 @@ OUTPUT_DIR="./clip_${DATASET}_model"
 EVALUATION_STRATEGY=${5:-"epoch"}
 
 python train.py \
-    --dataset $DATASET \
+    --dataset_name $DATASET \
     --batch_size $BATCH_SIZE \
     --num_train_epochs $EPOCHS \
     --output_dir $OUTPUT_DIR \

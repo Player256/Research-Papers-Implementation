@@ -1,1 +1,5 @@
 .vscode
+**/__pycache__/
+clip_scratch/clip_atasoglu
+clip_scratch/data
+clip_scratch/wandb

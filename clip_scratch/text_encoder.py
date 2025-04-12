@@ -96,15 +96,15 @@ class TextEncoder(nn.Module):
 
         self.projection = nn.Linear(d_model, emb_dim)
 
-    def forward(self, text, mask=None):
-        x = self.embed(text)
+    def forward(self, input_ids, mask=None):
+        x = self.embed(input_ids)
         x = self.pos_embed(x)
 
         for encoder_layer in self.transformer:
             x = encoder_layer(x, mask=mask)
 
         if mask is not None:
-            x = x[torch.arange(text.shape[0]), torch.sum(mask, dim=1) - 1]
+            x = x[torch.arange(input_ids.shape[0]), torch.sum(mask, dim=1) - 1]
         else:
             x = x[:, -1]
 

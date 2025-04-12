@@ -77,6 +77,6 @@ class TrainingArguments:
     logging_steps: int = field(default=100, metadata={"help": "Log every X steps"})
     fp16: bool = field(default=False, metadata={"help": "Use mixed precision training"})
     seed: int = field(default=42, metadata={"help": "Random seed"})
-    train_captioning: bool = field(
+    train_captioning_model: bool = field(
         default=False, metadata={"help": "Whether to train captioning model after CLIP"}
     )
