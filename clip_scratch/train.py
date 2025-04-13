@@ -5,8 +5,10 @@ from transformers import (
     HfArgumentParser,
     TrainingArguments as HfTrainingArguments,
     CLIPProcessor,
-    set_seed
+    set_seed,
 )
+from safetensors.torch import load_file
+
 from arguments import ModelArguments, DataArguments, TrainingArguments
 from dataset import load_flickr
 from trainer import CLIPTrainer, CaptioningTrainer
@@ -18,12 +20,13 @@ from image_captioning_model import ImageCaptioningModel
 
 logger = logging.getLogger(__name__)
 
-def train():
-    parser = HfArgumentParser(
-        (ModelArguments, DataArguments, TrainingArguments)
-    )
 
-    model_args, data_args, training_args, _ = parser.parse_args_into_dataclasses(return_remaining_strings=True)
+def train():
+    parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
+
+    model_args, data_args, training_args, _ = parser.parse_args_into_dataclasses(
+        return_remaining_strings=True
+    )
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -34,10 +37,7 @@ def train():
 
     processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
 
-    datasets = load_flickr(
-        processor,
-        dataset_name=data_args.dataset_name,
-    )
+    datasets = load_flickr(processor)
 
     vision_encoder = VisionEncoder(
         d_model=model_args.vision_hidden_dim,
@@ -50,7 +50,7 @@ def train():
     )
 
     text_encoder = TextEncoder(
-        vocab_size=processor.tokenizer.vocab_size,  
+        vocab_size=processor.tokenizer.vocab_size,
         d_model=model_args.text_hidden_dim,
         max_seq_len=model_args.max_seq_len,
         n_layers=model_args.text_num_layers,
@@ -83,24 +83,39 @@ def train():
         model=clip_model,
         args=hf_training_args,
         train_dataset=datasets["train"],
-        eval_dataset=datasets["validation"]
+        eval_dataset=datasets["validation"],
     )
-
-    logger.info("*** Starting CLIP Model Training ***")
-    clip_trainer.train()
-
-    clip_trainer.save_model(training_args.output_dir)
+    if training_args.train_clip_model:  
+        logger.info("*** Starting CLIP Model Training ***")
+        clip_trainer.train()
+        clip_trainer.save_model(training_args.output_dir)
 
     if training_args.train_captioning_model:
         logger.info("*** Starting Captioning Model Training ***")
 
+        clip_model = CLIP(
+            vision_encoder=vision_encoder,
+            text_encoder=text_encoder,
+            temperature=model_args.temperature,
+            embed_dim=model_args.embed_dim,
+        )
+        state_dict = load_file(
+            "clip_atasoglu/flickr8k-dataset_model/model.safetensors"
+        )
+
+        clip_model.load_state_dict(state_dict, strict=False)
+        
+        clip_model.eval()
+        for params in clip_model.parameters():
+            params.requires_grad = False
+
         text_decoder = TextDecoder(
-            vocab_size=49408,
+            vocab_size=processor.tokenizer.vocab_size,
             max_seq_len=model_args.max_seq_len,
             embed_dim=model_args.embed_dim,
             hidden_dim=768,
             n_layers=6,
-            n_heads=8
+            n_heads=8,
         )
 
         captioning_model = ImageCaptioningModel(
@@ -119,6 +134,7 @@ def train():
         captioning_output_dir = os.path.join(training_args.output_dir, "captioning")
         os.makedirs(captioning_output_dir, exist_ok=True)
         captioning_trainer.save_model(captioning_output_dir)
+
 
 if __name__ == "__main__":
     train()

@@ -80,3 +80,7 @@ class TrainingArguments:
     train_captioning_model: bool = field(
         default=False, metadata={"help": "Whether to train captioning model after CLIP"}
     )
+    
+    train_clip_model: bool = field(
+        default=True, metadata={"help": "Whether to train CLIP model"}
+    )

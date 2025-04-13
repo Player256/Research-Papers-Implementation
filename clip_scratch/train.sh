@@ -3,9 +3,10 @@
 DATASET=${1:-"atasoglu/flickr8k-dataset"}
 BATCH_SIZE=${2:-64}
 EPOCHS=${3:-10}
-TRAIN_CAPTIONING=${4:-false}
+TRAIN_CAPTIONING=${4:-True}
 OUTPUT_DIR="./clip_${DATASET}_model"
 EVALUATION_STRATEGY=${5:-"epoch"}
+TRAIN_CLIP=${6:-False}
 
 python train.py \
     --dataset_name $DATASET \
@@ -19,7 +20,8 @@ python train.py \
     --evaluation_strategy $EVALUATION_STRATEGY \
     --logging_steps 100 \
     --fp16 \
-    --train_captioning $TRAIN_CAPTIONING \
+    --train_captioning_model $TRAIN_CAPTIONING \
     --data_dir "./data" \
     --text_num_heads 8 \
-    --text_hidden_dim 512
+    --text_hidden_dim 512 \
+    --train_clip_model $TRAIN_CLIP \

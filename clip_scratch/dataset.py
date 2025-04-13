@@ -39,7 +39,7 @@ class FlickrDataset(Dataset):
         return processed
 
 
-def load_flickr(processor, dataset_name="flickr8k"):
+def load_flickr(processor):
     dataset = load_dataset("tsystems/flickr8k", trust_remote_code=True)
     split_dataset = dataset["train"].train_test_split(test_size=0.2, seed=42)
     test_valid_dataset = split_dataset["test"].train_test_split(test_size=0.5, seed=42)

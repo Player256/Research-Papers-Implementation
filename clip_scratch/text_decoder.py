@@ -26,7 +26,7 @@ class TextDecoder(nn.Module):
 
         decoder_layer = nn.TransformerDecoderLayer(
             d_model=hidden_dim,
-            nheads=n_heads,
+            nhead=n_heads,
             dim_feedforward=hidden_dim * 4,
             dropout=dropout,
             activation="gelu",
@@ -55,11 +55,14 @@ class TextDecoder(nn.Module):
 
         if self.training and captions is not None:
             token_embeddings = self.token_embedding(captions)
-            seq_len = token_embeddings.size(1)
-            position_embeddings = self.position_embedding[:, :seq_len, :]
-
-            embeddings = token_embeddings + position_embeddings
-
+            embeddings = self.position_embedding(token_embeddings)
+            
+            seq_len = captions.size(1)
+            
+            tgt_mask_padding = None
+            if attention_mask is not None:
+                tgt_mask_padding = (attention_mask == 0).bool()
+            
             tgt_mask = self.generate_square_subsequent_mask(seq_len).to(
                 captions.device
             )
@@ -68,9 +71,7 @@ class TextDecoder(nn.Module):
                 tgt=embeddings,
                 memory=memory,
                 tgt_mask=tgt_mask,
-                tgt_key_padding_mask=(
-                    ~attention_mask if attention_mask is not None else None
-                ),
+                tgt_key_padding_mask=tgt_mask_padding
             )
 
             logits = self.output_projections(output)
@@ -87,10 +88,7 @@ class TextDecoder(nn.Module):
 
             for i in range(self.max_seq_len):
                 token_embeddings = self.token_embedding(input_ids)
-                position_embeddings = self.position_embedding[
-                    :, : input_ids.size(1), :
-                ]
-                embeddings = token_embeddings + position_embeddings
+                embeddings = self.position_embedding(token_embeddings)
 
                 tgt_mask = self.generate_square_subsequent_mask(
                     input_ids.size(1)
