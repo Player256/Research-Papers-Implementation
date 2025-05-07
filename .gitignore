@@ -3,3 +3,8 @@
 clip_scratch/clip_atasoglu
 clip_scratch/data
 clip_scratch/wandb
+diffusion_models_learn/ghibli_finetuning/dataset
+diffusion_models_learn/ghibli_finetuning/ghibli_style_descriptions
+diffusion_models_learn/ghibli_finetuning/lora-ghibli_style_descriptions
+diffusion_models_learn/ghibli_finetuning/wandb
+diffusion_models_learn/ghibli_finetuning/lora_ghibli_finetuned
