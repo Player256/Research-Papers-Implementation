@@ -8,3 +8,8 @@ diffusion_models_learn/ghibli_finetuning/ghibli_style_descriptions
 diffusion_models_learn/ghibli_finetuning/lora-ghibli_style_descriptions
 diffusion_models_learn/ghibli_finetuning/wandb
 diffusion_models_learn/ghibli_finetuning/lora_ghibli_finetuned
+diffusion_models_learn/cp-vton/data/test
+diffusion_models_learn/cp-vton/data/train
+diffusion_models_learn/cp-vton/__pycache__
+diffusion_models_learn/cp-vton/tensorboard
+diffusion_models_learn/cp-vton/result
