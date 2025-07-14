@@ -13,3 +13,4 @@ diffusion_models_learn/cp-vton/data/train
 diffusion_models_learn/cp-vton/__pycache__
 diffusion_models_learn/cp-vton/tensorboard
 diffusion_models_learn/cp-vton/result
+wandb

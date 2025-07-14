@@ -24,7 +24,7 @@ class SRResNetDataset(Dataset):
 
     def __getitem__(self, idx):
         example = self.hf_dataset[idx]
-        image = example['image']
+        image = example['image'].convert('RGB')  
         
         hr_image = self.transform_hr(image)
         lr_image = self.transform_lr(transforms.ToPILImage()(hr_image))
