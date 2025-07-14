@@ -1,0 +1,8 @@
+{"time":"2025-07-14T09:52:32.559621997Z","level":"INFO","msg":"stream: starting","core version":"0.19.11","symlink path":"/home/ubuntu/oracle/Research-Papers-Implementation/wandb/run-20250714_095232-a6h1zuvj/logs/debug-core.log"}
+{"time":"2025-07-14T09:52:32.729871209Z","level":"INFO","msg":"created new stream","id":"a6h1zuvj"}
+{"time":"2025-07-14T09:52:32.72990952Z","level":"INFO","msg":"stream: started","id":"a6h1zuvj"}
+{"time":"2025-07-14T09:52:32.729945261Z","level":"INFO","msg":"sender: started","stream_id":"a6h1zuvj"}
+{"time":"2025-07-14T09:52:32.72994517Z","level":"INFO","msg":"writer: Do: started","stream_id":"a6h1zuvj"}
+{"time":"2025-07-14T09:52:32.729980101Z","level":"INFO","msg":"handler: started","stream_id":"a6h1zuvj"}
+{"time":"2025-07-14T09:52:32.980779798Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-07-14T09:53:17.983954659Z","level":"ERROR","msg":"monitor: error sampling metrics: open /proc/9439/statm: no such file or directory\nopen /proc/9439/stat: no such file or directory\nopen /proc/9439/status: no such file or directory"}

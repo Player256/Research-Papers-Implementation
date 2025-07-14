@@ -27,7 +27,7 @@ class SRResNetDataset(Dataset):
         image = example['image']
         
         hr_image = self.transform_hr(image)
-        lr_image = self.transform_lr(transforms.toPILImage()(hr_image))
+        lr_image = self.transform_lr(transforms.ToPILImage()(hr_image))
         
         return {
             'lr': lr_image,
