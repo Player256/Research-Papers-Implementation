@@ -6,11 +6,15 @@ from torch.utils.data import DataLoader
 import random
 import tqdm
 import numpy as np
+import os
 
 from datasets import load_dataset
 from ..model.srresnet import SRResNet
 from ..dataset.srresnet import SRResNetDataset
 from ..loss.srresnet_loss import srresnet_loss
+
+os.makedirs("SRGAN/checkpoints", exist_ok=True)
+os.makedirs("SRGAN/final", exist_ok=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -18,13 +22,13 @@ model = SRResNet().to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 criterion = srresnet_loss()
 
-train_dataset = load_dataset("ILSVRC/imagenet-1k", split="train[:8%]")
-val_dataset = load_dataset("ILSVRC/imagenet-1k", split="train[8%:10%]")
-test_dataset = load_dataset("ILSVRC/imagenet-1k", split="validation[:1%]")
+train_dataset = load_dataset("ILSVRC/imagenet-1k", split="train[:28%]")
+val_dataset = load_dataset("ILSVRC/imagenet-1k", split="validation[:45000]")
+test_dataset = load_dataset("ILSVRC/imagenet-1k", split="validation[45000:]")
 
-train_ds = SRResNetDataset(train_dataset, scale=4)
-val_ds = SRResNetDataset(val_dataset, scale=4)
-test_ds = SRResNetDataset(test_dataset, scale=4)
+train_ds = SRResNetDataset(train_dataset, scale=4,train_mode=True)
+val_ds = SRResNetDataset(val_dataset, scale=4,train_mode=False)
+test_ds = SRResNetDataset(test_dataset, scale=4,train_mode=False)
 
 train_loader = DataLoader(train_ds, batch_size=16, shuffle=True, num_workers=0)
 val_loader = DataLoader(val_ds, batch_size=16, shuffle=False, num_workers=0)
@@ -131,9 +135,9 @@ def train(model, train_loader, val_loader, optimizer, criterion, num_epochs):
             torch.save(model.state_dict(), "best_srresnet.pth")
 
         if (epoch + 1) % 10 == 0:
-            torch.save(model.state_dict(), f"srresnet_epoch_{epoch+1}.pth")
+            torch.save(model.state_dict(), f"SRGAN/checkpoints/srresnet_epoch_{epoch+1}.pth")
 
-    torch.save(model.state_dict(), "srresnet_final.pth")
+    torch.save(model.state_dict(), "SRGAN/final/srresnet_final.pth")
 
 
 if __name__ == "__main__":

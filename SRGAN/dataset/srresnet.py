@@ -3,14 +3,14 @@ from torch.utils.data import Dataset
 
 
 class SRResNetDataset(Dataset):
-    def __init__(self, hf_dataset, hr_size=96, scale=4, mode="train"):
+    def __init__(self, hf_dataset, hr_size=96, scale=4, train_mode=False):
         self.hf_dataset = hf_dataset
         self.hr_size = hr_size
         self.lr_size = hr_size // scale
         self.scale = scale
-        self.mode = mode
+        self.train_mode = train_mode
 
-        if mode == "train":
+        if train_mode:
             self.transform_hr = transforms.Compose(
                 [
                     transforms.Resize((max(120, hr_size + 24), max(120, hr_size + 24))),
