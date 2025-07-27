@@ -12,9 +12,9 @@ from torch.nn.utils import clip_grad_norm_
 from skimage.metrics import structural_similarity as ssim
 
 from datasets import load_dataset
-from ..model.srresnet import SRResNet
-from ..dataset.srresnet import SRResNetDataset
-from ..loss.srresnet_loss import srresnet_loss
+from SRGAN.model.srresnet import SRResNet
+from SRGAN.dataset.srresnet import SRResNetDataset
+from SRGAN.loss.srresnet_loss import srresnet_loss
 
 # For Reproducibility
 seed = 42

@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-from model.srresnet import SRResNet
-
 
 class InitialConvLayer(nn.Module):
     def __init__(self):
@@ -76,7 +74,6 @@ class Discriminator(nn.Module):
         x = self.fc_final(x)
         x = self.sigmoid(x)
         return x
-
 
 class SRGAN(nn.Module):
     def __init__(self):
