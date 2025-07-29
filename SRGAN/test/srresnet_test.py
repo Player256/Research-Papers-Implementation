@@ -1,21 +1,24 @@
 import tqdm
 import torch
 from torch.utils.data import DataLoader
-from srresnet_test_dataset import SRResNetTestDataset
+from ..model.srresnet import SRResNet
+from .srresnet_test_dataset import SRResNetTestDataset
 
 from skimage.metrics import structural_similarity as ssim
 
-set5_path = "test/1/set5/Set5"
-set14_path = "test/1/set14/Set14"
+set5_path = "/home/ubuntu/oracle/Research-Papers-Implementation/SRGAN/test/1/set5/Set5"
+set14_path = (
+    "/home/ubuntu/oracle/Research-Papers-Implementation/SRGAN/test/1/set14/Set14"
+)
 
-model = torch.load("SRGAN/checkpoints/best_srresnet.pth")
-model.eval()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
 
+model = SRResNet().to(device)
+model.load_state_dict(torch.load("SRGAN/checkpoints/best_srresnet.pth"))
+model.eval()
 
 def load_dataset(path):
-    test_dataset = SRResNetTestDataset(img_folder=path, hr_size=128, scale=4)
+    test_dataset = SRResNetTestDataset(img_folder=path, hr_size=192, scale=4)
 
     test_loader = DataLoader(
         test_dataset,
@@ -53,8 +56,8 @@ def test(model, test_loader, device):
 
             sr = model(lr)
 
-            psnr = calculate_psnr(sr, hr)
-            ssim_value = calculate_ssim(sr, hr)
+            psnr = calculate_psnr(sr[0], hr[0])
+            ssim_value = calculate_ssim(sr[0], hr[0])
 
             total_psnr += psnr
             total_ssim += ssim_value
