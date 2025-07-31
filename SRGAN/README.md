@@ -39,6 +39,7 @@ SRGAN/
     ```
 
 4.  Evaluate the saved model:
+    Model weights:- https://drive.google.com/file/d/1B7u-QYPKqrM1HSJx5Cw0fa-nZGFEDfpr/view?usp=sharing
 
     ```bash
     python -m SRGAN.test.srresnet_test   # uses checkpoints/best_srresnet.pth
