@@ -1,38 +1,60 @@
-import torch
 import torch.nn as nn
+import torch
 from torchvision.models import vgg19, VGG19_Weights
 
 
+# ----------------------------- VGG perceptual ----------------------
 class VGGFeatureExtractor(nn.Module):
-    def __init__(self, layer_index=35):
+    def __init__(self, layer_idx: int = 35):  # relu5_4
         super().__init__()
         vgg = vgg19(weights=VGG19_Weights.DEFAULT).features
-        self.features_extractor = nn.Sequential(*list(vgg.children())[:layer_index])
-        for param in self.features_extractor.parameters():
-            param.requires_grad = False
+        self.body = nn.Sequential(*list(vgg.children())[:layer_idx]).eval()
+        for p in self.body.parameters():
+            p.requires_grad_(False)
 
-    def forward(self, img):
-        return self.features_extractor(img)
+    def forward(self, x):
+        return self.body(x)
 
 
-class SRGANLoss(nn.Module):
+# ----------------------------- GAN loss ----------------------------
+class LSGANLoss(nn.Module):
+    """
+    Implements least-squares GAN loss (MSE to targets 0 / 1).
+    """
+
     def __init__(self):
         super().__init__()
-        self.adversarial_loss = nn.BCELoss()
-        self.content_loss = nn.MSELoss()
-        self.vgg = VGGFeatureExtractor().eval()
+        self.mse = nn.MSELoss()
 
-    def forward(self, sr_image, hr_image, disc_pred_fake, is_generator=True):
-        content_loss = self.content_loss(self.vgg(sr_image), self.vgg(hr_image))
+    # Discriminator loss
+    def d_loss(self, real_out, fake_out):
+        real_loss = 0.5 * self.mse(real_out, torch.ones_like(real_out))
+        fake_loss = 0.5 * self.mse(fake_out, torch.zeros_like(fake_out))
+        return real_loss + fake_loss
 
-        if is_generator:
-            adversarial_loss = self.adversarial_loss(
-                disc_pred_fake, torch.ones_like(disc_pred_fake)
-            )
-            total_loss = content_loss + 0.001 * adversarial_loss
-            return total_loss, content_loss, adversarial_loss
-        else:
-            real_loss = self.adversarial_loss(
-                disc_pred_fake, torch.zeros_like(disc_pred_fake)
-            )
-            return real_loss
+    # Generator adversarial component
+    def g_loss(self, fake_out):
+        return 0.5 * self.mse(fake_out, torch.ones_like(fake_out))
+
+
+# ----------------------------- SRGAN total -------------------------
+class SRGANLoss(nn.Module):
+    """
+    Final loss used to train the generator:
+        L_G = L_content + λ_adv * L_adv
+    """
+
+    def __init__(self, adv_weight: float = 1e-3):
+        super().__init__()
+        self.perceptual = VGGFeatureExtractor()
+        self.pixel_mse = nn.MSELoss()
+        self.adv = LSGANLoss()
+        self.lambda_adv = adv_weight
+
+    def content_loss(self, sr, hr):
+        return self.pixel_mse(self.perceptual(sr), self.perceptual(hr))
+
+    def g_total(self, sr, hr, d_fake):
+        c = self.content_loss(sr, hr)
+        a = self.adv.g_loss(d_fake)
+        return c + self.lambda_adv * a, c, a

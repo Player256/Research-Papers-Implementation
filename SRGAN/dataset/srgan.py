@@ -1,50 +1,40 @@
-from torchvision import transforms
 from torch.utils.data import Dataset
-import torch
+from torchvision import transforms
+from PIL import Image
+import random
 
 
 class SRGANDataset(Dataset):
-    def __init__(
-        self, hf_dataset, hr_size=96, scale=4, train_mode=False, add_noise=False
-    ):
+    def __init__(self, hf_dataset, hr_size=128, scale=4, train_mode=True):
         self.hf_dataset = hf_dataset
         self.hr_size = hr_size
         self.lr_size = hr_size // scale
-        self.scale = scale
-        self.train_mode = train_mode
-        self.add_noise = add_noise
+        self.train = train_mode
 
-        if train_mode:
-            self.transform_hr = transforms.Compose(
+        if self.train:
+            self.hr_transform = transforms.Compose(
                 [
-                    transforms.Resize((hr_size + 24, hr_size + 24)),
-                    transforms.RandomCrop(hr_size),
-                    transforms.RandomHorizontalFlip(p=0.5),
-                    transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                    ),  
+                    transforms.RandomResizedCrop(hr_size, scale=(0.8, 1.0)),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(),  # [0,1]
                 ]
             )
         else:
-            self.transform_hr = transforms.Compose(
+            self.hr_transform = transforms.Compose(
                 [
+                    transforms.CenterCrop(min(hf_dataset[0]["image"].size)),
                     transforms.Resize((hr_size, hr_size)),
                     transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                    ),
                 ]
             )
 
-        self.transform_lr = transforms.Compose(
+        # LR is produced from PIL HR → Resize → ToTensor
+        self.lr_down = transforms.Compose(
             [
                 transforms.Resize(
                     self.lr_size, interpolation=transforms.InterpolationMode.BICUBIC
                 ),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
+                transforms.ToTensor(),
             ]
         )
 
@@ -52,15 +42,14 @@ class SRGANDataset(Dataset):
         return len(self.hf_dataset)
 
     def __getitem__(self, idx):
-        example = self.hf_dataset[idx]
-        image = example["image"].convert("RGB")
+        pil = self.hf_dataset[idx]["image"].convert("RGB")
+        hr = self.hr_transform(pil)  # tensor 3×H×W  in [0,1]
 
-        hr_image = self.transform_hr(image)
+        # build LR from the PIL (NOT from tensor) to avoid aliasing
+        lr = self.lr_down(pil)
 
-        if self.add_noise and self.train_mode:
-            noise = torch.randn_like(hr_image) * 0.01
-            hr_image = torch.clamp(hr_image + noise, 0.0, 1.0)
+        # for square crop consistency during training
+        if self.train and (lr.shape[-2:] != (self.lr_size, self.lr_size)):
+            lr = transforms.functional.center_crop(lr, self.lr_size)
 
-        lr_image = self.transform_lr(hr_image)
-
-        return {"lr": lr_image, "hr": hr_image}
+        return {"lr": lr, "hr": hr}
