@@ -5,7 +5,7 @@ import random
 
 
 class SRGANDataset(Dataset):
-    def __init__(self, hf_dataset, hr_size=128, scale=4, train_mode=True):
+    def __init__(self, hf_dataset, hr_size=96, scale=4, train_mode=True):
         self.hf_dataset = hf_dataset
         self.hr_size = hr_size
         self.lr_size = hr_size // scale
@@ -16,7 +16,7 @@ class SRGANDataset(Dataset):
                 [
                     transforms.RandomResizedCrop(hr_size, scale=(0.8, 1.0)),
                     transforms.RandomHorizontalFlip(),
-                    transforms.ToTensor(),  # [0,1]
+                    transforms.ToTensor(),  
                 ]
             )
         else:
@@ -28,7 +28,6 @@ class SRGANDataset(Dataset):
                 ]
             )
 
-        # LR is produced from PIL HR → Resize → ToTensor
         self.lr_down = transforms.Compose(
             [
                 transforms.Resize(
@@ -43,12 +42,10 @@ class SRGANDataset(Dataset):
 
     def __getitem__(self, idx):
         pil = self.hf_dataset[idx]["image"].convert("RGB")
-        hr = self.hr_transform(pil)  # tensor 3×H×W  in [0,1]
+        hr = self.hr_transform(pil)  
 
-        # build LR from the PIL (NOT from tensor) to avoid aliasing
         lr = self.lr_down(pil)
 
-        # for square crop consistency during training
         if self.train and (lr.shape[-2:] != (self.lr_size, self.lr_size)):
             lr = transforms.functional.center_crop(lr, self.lr_size)
 
