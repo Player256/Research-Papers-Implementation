@@ -30,20 +30,17 @@ os.makedirs("SRGAN/final", exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = SRResNet().to(device)
-optimizer = optim.Adam(model.parameters(), lr=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=1e-4,betas=(0.9, 0.999))
 criterion = srresnet_loss()
 
 train_dataset = load_dataset("ILSVRC/imagenet-1k", split="train[:35%]")
-val_dataset = load_dataset("ILSVRC/imagenet-1k", split="validation[:45000]")
-test_dataset = load_dataset("ILSVRC/imagenet-1k", split="validation[45000:]")
+val_dataset = load_dataset("ILSVRC/imagenet-1k", split="validation[:10%]")
 
 train_ds = SRResNetDataset(train_dataset, scale=4, train_mode=True)
 val_ds = SRResNetDataset(val_dataset, scale=4, train_mode=False)
-test_ds = SRResNetDataset(test_dataset, scale=4, train_mode=False)
 
 train_loader = DataLoader(train_ds, batch_size=16, shuffle=True, num_workers=4)
 val_loader = DataLoader(val_ds, batch_size=16, shuffle=False, num_workers=4)
-test_loader = DataLoader(test_ds, batch_size=16, shuffle=False, num_workers=4)
 
 wandb.init(
     project="SRGAN",
@@ -57,9 +54,8 @@ wandb.init(
         "optimizer": "Adam",
         "model_name": "SRResNet",
         "dataset": "ILSVRC/imagenet-1k",
-        "train_size": "35%",
-        "val_size": "90%",
-        "test_size": "10%",
+        "train_size": "25%",
+        "val_size": "10%",
     },
 )
 
@@ -125,25 +121,6 @@ def validate(model, val_loader, criterion):
     avg_psnr = total_psnr / count
     avg_ssim = total_ssim / count
     return avg_val_loss, avg_psnr, avg_ssim
-
-
-def test(model, test_loader, criterion):
-    model.eval()
-    test_loss = 0
-    with torch.no_grad():
-        progress_bar = tqdm.tqdm(test_loader, desc="Testing", unit="batch")
-        for batch in progress_bar:
-            lr_images = batch["lr"].to(device)
-            hr_images = batch["hr"].to(device)
-
-            sr_images = model(lr_images)
-            batch_loss = criterion(sr_images, hr_images)
-            test_loss += batch_loss.item()
-
-            progress_bar.set_postfix(test_loss=f"{batch_loss.item():.4f}")
-
-    avg_test_loss = test_loss / len(test_loader)
-    return avg_test_loss
 
 
 def train(model, train_loader, val_loader, optimizer, criterion, num_epochs):
@@ -229,13 +206,5 @@ if __name__ == "__main__":
     num_epochs = 20
     print("Starting training...")
     train(model, train_loader, val_loader, optimizer, criterion, num_epochs)
-
-    # print("Loading best model for testing...")
-    # model.load_state_dict(torch.load("best_srresnet.pth"))
-    # test_loss = test(model, test_loader, criterion)
-
-    # wandb.log({"test_loss": test_loss})
-    # print(f"Test Loss: {test_loss:.4f}")
-
     wandb.finish()
     print("Training and testing complete.")

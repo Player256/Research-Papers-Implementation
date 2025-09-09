@@ -18,6 +18,10 @@ class SRResNetDataset(Dataset):
                     transforms.RandomHorizontalFlip(),
                     transforms.RandomRotation(90),
                     transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.485, 0.456, 0.406],
+                        std=[0.229, 0.224, 0.225],
+                    )
                 ]
             )
         else:
@@ -34,6 +38,10 @@ class SRResNetDataset(Dataset):
                     self.lr_size, interpolation=transforms.InterpolationMode.BICUBIC
                 ),
                 transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                )
             ]
         )
 

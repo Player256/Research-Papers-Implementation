@@ -210,11 +210,13 @@ def train_srgan():
 
             real_pred = discriminator(hr)
             real_labels = torch.ones_like(real_pred)
-            d_loss_real = loss_fn.adversarial_loss(real_pred, real_labels)
+            # Punish the discriminator for predicting real images as fake
+            d_loss_real = nn.BCELoss(real_pred, real_labels)
 
             fake_pred_d = discriminator(fake_sr.detach())
             fake_labels = torch.zeros_like(fake_pred_d)
-            d_loss_fake = loss_fn.adversarial_loss(fake_pred_d, fake_labels)
+            #Punish the discriminator for predicting fake images as real
+            d_loss_fake = nn.BCELoss(fake_pred_d, fake_labels)
 
             d_loss = (d_loss_real + d_loss_fake) / 2
 
@@ -225,6 +227,7 @@ def train_srgan():
 
             fake_sr_g = generator(lr)
             fake_pred_g = discriminator(fake_sr_g)
+            #g_total_loss is the loss from the SRGAN paper -> content_loss + Lambda * adversarial_loss
             g_total_loss, g_content_loss, g_adv_loss = loss_fn(
                 fake_sr_g, hr, fake_pred_g, is_generator=True
             )
