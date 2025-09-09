@@ -15,3 +15,5 @@ diffusion_models_learn/cp-vton/tensorboard
 diffusion_models_learn/cp-vton/result
 wandb
 */checkpoints
+ai_text_detection/dataset
+ai_text_detection/actual_dataset_split
