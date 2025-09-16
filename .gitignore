@@ -17,4 +17,4 @@ wandb
 */checkpoints
 ai_text_detection/sft/dataset
 ai_text_detection/sft/checkpoints
-ai_text_detection/sft/actual_dataset_split
+ai_text_detection/sft/distilroberta-noadv-raid
