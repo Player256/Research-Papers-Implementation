@@ -18,3 +18,4 @@ wandb
 ai_text_detection/sft/dataset
 ai_text_detection/sft/checkpoints
 ai_text_detection/sft/distilroberta-noadv-raid
+kaggle_ai_text_detection/data
