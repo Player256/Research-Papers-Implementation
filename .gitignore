@@ -15,7 +15,8 @@ diffusion_models_learn/cp-vton/tensorboard
 diffusion_models_learn/cp-vton/result
 wandb
 */checkpoints
-ai_text_detection/sft/dataset
-ai_text_detection/sft/checkpoints
-ai_text_detection/sft/distilroberta-noadv-raid
+ai_text_detection/raid_benchmark/dataset
+ai_text_detection/raid_benchmark/ai_text_detector
 kaggle_ai_text_detection/data
+
+learn_django
